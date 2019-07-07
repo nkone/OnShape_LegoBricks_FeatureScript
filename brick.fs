@@ -6,7 +6,7 @@
 #    By: phtruong <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/07/07 13:59:02 by phtruong          #+#    #+#              #
-#    Updated: 2019/07/07 13:59:26 by phtruong         ###   ########.fr        #
+#    Updated: 2019/07/07 14:36:59 by phtruong         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -57,9 +57,12 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     });
     /*
     ** function initializeVar:
-    ** Set initialize variables
+    ** Set initialize variables	
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: create global variables
+	** Return: NULL
     */
     function initializeVar(context is Context, definition is map)
     {
@@ -77,8 +80,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function baseSketch:
     ** Sketch the base for extrusion
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: Sketches a 1 by 1 lego piece
+	** Return: NULL
     */
     function baseSketch(context is Context, id is Id)
     {
@@ -97,8 +103,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function extrudeBase:
     ** Using the previous sketch, extrude a 1 by 1 lego piece
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: Gets height from global and extrude blind base on previous sketch
+	** Return: NULL
     */
     function extrudeBase(context is Context, id is Id)
     {
@@ -113,8 +122,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function studSketch:
     ** Sketches the studs on top of the lego brick
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: loops through row and columns and sketch the studs on top of the base extrude
+	** Return: NULL
     */
     function studSketch(context is Context, id is Id)
     {
@@ -147,8 +159,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function extrudeStud:
     ** Extrude the studs base on previous sketch
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default units: millimeter
     ** Functionality: extrude the studs on the surface of the base extrude
+	** Return: NULL
     */
     function extrudeStud(context is Context, id is Id)
     {
@@ -165,8 +180,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function textSketch:
     ** Sketches the text on top of the studs
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: Sketches the text using the two corners, offset from the center of the studs
+	** Return: NULL
     */
     function textSketch(context is Context, id is Id)
     {
@@ -208,8 +226,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function textExtrude:
     ** Extrude the text region from the previous sketch
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: Extrude the text on the studs
+	** Return: NULL
     */
     function textExtrude(context is Context, id is Id)
     {
@@ -226,8 +247,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function shellBase:
     ** Shell the bricks
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: Creates a hollow block of brick
+	** Return: NULL
     */
     function shellBase(context is Context, id is Id)
     {
@@ -242,8 +266,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function solidInnerCol:
     ** Creates solid inner columns support
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: For blocks consists of 1 by x or x by 1, create solid tubes
+	** Return: NULL
     */
     function solidInnerCol(context is Context, id is Id)
     {
@@ -284,8 +311,11 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function innerHollow:
     ** Creates hollow columns support
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Default unit: millimeter
     ** Functionality: For blocks that have more than 2 for rows and columns, create hollow tubes
+	** Return: NULL
     */
     function innerHollow(context is Context, id is Id)
     {
@@ -331,7 +361,10 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     }
     /*
     ** function unifySolid:
+	** Parameter:
+	** 		context is Context, id is Id (passed in from main)
     ** Unifies all extrude solids
+	** Return: NULL
     */
     function unifySolid(context is Context, id is Id)
     {
