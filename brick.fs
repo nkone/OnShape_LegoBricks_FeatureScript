@@ -5,8 +5,8 @@
 #                                                     +:+ +:+         +:+      #
 #    By: phtruong <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2019/07/07 13:59:02 by phtruong          #+#    #+#              #
-#    Updated: 2019/07/07 14:36:59 by phtruong         ###   ########.fr        #
+#    Created: 2019/07/07 17:28:34 by phtruong          #+#    #+#              #
+#    Updated: 2019/07/07 17:28:36 by phtruong         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,91 +28,78 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     }
     {
         // Define the function's action
-        initializeVar(context, definition);
-        baseSketch(context, id);
-        extrudeBase(context, id);
-        studSketch(context, id);
-        extrudeStud(context, id);
-        shellBase(context, id);
+        var width = 8;
+        var height = 9.6;
+        var studDia = 4.8;
+        var studHeight = 1.6;
+        var thic = 1.6;
+        var solDia = 3.2;
+        var holOutDia = 6.4;
+        var holInDia = 4.8;
+        baseSketch(context, id, width, definition.col, definition.row);
+        extrudeBase(context, id, height);
+        studSketch(context, id, width, definition.col, definition.row, studDia);
+        extrudeStud(context, id, studHeight);
+        shellBase(context, id, thic);
         if (definition.text)
         {
-            setVariable(context, "studtext", "Lego");
-            textSketch(context, id);
+            setVariable(context, "studtext", "LEGO");
+            textSketch(context, id, width, definition.col, definition.row);
             textExtrude(context, id);
         }
         if ((definition.col == 1 && definition.row > 1) || (definition.col > 1 && definition.row == 1)) {
-             solidInnerCol(context, id);
+             solidInnerCol(context, id, width, studDia, solDia, definition.col, definition.row);
              unifySolid(context, id);
-             deleteBodies(context, id + "solid_delete", { "entities" : qUnion([qCreatedBy(id + "solid", EntityType.BODY)])});
+             deleteBodies(context, id + "solidDelete", { "entities" : qUnion([qCreatedBy(id + "solid", EntityType.BODY)])});
         }
         if (definition.col > 1 && definition.row > 1) {
-            innerHollow(context, id);
+            innerHollow(context, id, width, holOutDia, holInDia, definition.col, definition.row);
             unifySolid(context, id);
-            deleteBodies(context, id + "hollow_delete", { "entities" : qUnion([qCreatedBy(id + "hollow_inner", EntityType.BODY)])});
+            deleteBodies(context, id + "hollowDelete", { "entities" : qUnion([qCreatedBy(id + "hollowInner", EntityType.BODY)])});
         }
-        //Clear ketches
-        deleteBodies(context, id + "stud_delete", { "entities" : qUnion([qCreatedBy(id + "stud", EntityType.BODY),
+        //Clear sketches
+        deleteBodies(context, id + "studDelete", { "entities" : qUnion([qCreatedBy(id + "stud", EntityType.BODY),
                                                                         qCreatedBy(id + "base", EntityType.BODY),
-                                                                        qCreatedBy(id + "stud_text", EntityType.BODY)])});
+                                                                        qCreatedBy(id + "studText", EntityType.BODY)])});
     });
-    /*
-    ** function initializeVar:
-    ** Set initialize variables	
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
-    ** Default unit: millimeter
-    ** Functionality: create global variables
-	** Return: NULL
-    */
-    function initializeVar(context is Context, definition is map)
-    {
-        setVariable(context, "width", 8);
-        setVariable(context, "base_height", 9.6);
-        setVariable(context, "stud_height", 1.6);
-        setVariable(context, "stud_dia", 4.8);
-        setVariable(context, "thic", 1.6);
-        setVariable(context, "solid_inner_dia", 3.2);
-        setVariable(context, "hollow_outer_dia", 6.4);
-        setVariable(context, "hollow_inner_dia", 4.8);
-        setVariable(context, "col", definition.col);
-        setVariable(context, "row", definition.row);
-    }
     /*
     ** function baseSketch:
     ** Sketch the base for extrusion
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Parameters:
+    ** [context] is Context (built in data structure)
+    ** [id] is Id (built in data structure)
+    ** [width] is width of the 1 by 1 lego piece
+    ** [col] is number of columns
+    ** [row] is number of rows
     ** Default unit: millimeter
-    ** Functionality: Sketches a 1 by 1 lego piece
-	** Return: NULL
+    ** Functionality: Sketches the base of the brick
+    ** Return: NULL
     */
-    function baseSketch(context is Context, id is Id)
+    function baseSketch(context is Context, id is Id, width is number, col is number, row is number)
     {
-        var sketch_base = newSketch(context, id + "base", {
+        var sketchBase = newSketch(context, id + "base", {
                 "sketchPlane" : qCreatedBy(makeId("Top"), EntityType.FACE)
         });
-        var width = getVariable(context, "width");
-        var col = getVariable(context, "col");
-        var row = getVariable(context, "row");
-        skRectangle(sketch_base, "base", {
+        skRectangle(sketchBase, "base", {
                 "firstCorner" : vector(0, 0) * millimeter,
                 "secondCorner" : vector(width * row, width * col) * millimeter
         });
-        skSolve(sketch_base); 
+        skSolve(sketchBase); 
     }
     /*
     ** function extrudeBase:
-    ** Using the previous sketch, extrude a 1 by 1 lego piece
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Using the previous sketch, extrude the base with given height
+    ** Parameters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** [height] is the height of the brick
     ** Default unit: millimeter
-    ** Functionality: Gets height from global and extrude blind base on previous sketch
-	** Return: NULL
+    ** Functionality: Creates the base of the brick
+    ** Return: NULL
     */
-    function extrudeBase(context is Context, id is Id)
+    function extrudeBase(context is Context, id is Id, height is number)
     {
-        var height = getVariable(context, "base_height");
-        opExtrude(context, id + "base_extrude", {
+        opExtrude(context, id + "baseExtrude", {
                 "entities" : qSketchRegion(id + "base"),
                 "direction" : evOwnerSketchPlane(context, {"entity" : qSketchRegion(id + "base")}).normal,
                 "endBound" : BoundingType.BLIND,
@@ -122,103 +109,109 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function studSketch:
     ** Sketches the studs on top of the lego brick
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Parameters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** [width] is width of the 1 by 1 lego piece
+    ** [col] is number of columns
+    ** [row] is number of rows
+    ** [studDia] is diamater of a stud
     ** Default unit: millimeter
     ** Functionality: loops through row and columns and sketch the studs on top of the base extrude
-	** Return: NULL
+    ** Return: NULL
     */
-    function studSketch(context is Context, id is Id)
+    function studSketch(context is Context, id is Id, width is number, col is number, row is number, studDia is number)
     {
-        var sketch_stud = newSketch(context, id + "stud", {
-                "sketchPlane" : qNthElement(qCreatedBy(id + "base_extrude", EntityType.FACE), 2)
+        var sketchStud = newSketch(context, id + "stud", {
+                "sketchPlane" : qNthElement(qCreatedBy(id + "baseExtrude", EntityType.FACE), 2)
         });
         
-        var stud_radius = getVariable(context, "stud_dia")/2;
-        var stud_id = 0;
-        var width = getVariable(context, "width");
-        var col = getVariable(context, "col");
-        var row = getVariable(context, "row");
-        var stud_center_x;
-        var stud_center_y;
+        var studRadius = studDia/2;
+        var studId = 0;
+        var studCenterX;
+        var studCenterY;
         for (var c = 0; c < col; c += 1)
         {
             for (var r = 0; r < row; r += 1)
             {
-                stud_center_x = (width/2 + width * r);
-                stud_center_y = (width/2 + width * c);
-                skCircle(sketch_stud, "stud" ~ stud_id, {
-                    "center" : vector(stud_center_x, stud_center_y) * millimeter,
-                    "radius" : stud_radius * millimeter
+                studCenterX = (width/2 + width * r);
+                studCenterY = (width/2 + width * c);
+                skCircle(sketchStud, "stud" ~ studId, {
+                    "center" : vector(studCenterX, studCenterY) * millimeter,
+                    "radius" : studRadius * millimeter
                 });
-                stud_id += 1;
+                studId += 1;
             }
         }
-        skSolve(sketch_stud);
+        skSolve(sketchStud);
     }
     /*
     ** function extrudeStud:
     ** Extrude the studs base on previous sketch
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Parameters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** [studHeight] is the height of the stud
     ** Default units: millimeter
     ** Functionality: extrude the studs on the surface of the base extrude
-	** Return: NULL
+    ** Return: NULL
     */
-    function extrudeStud(context is Context, id is Id)
+    function extrudeStud(context is Context, id is Id, studHeight is number)
     {
-        var stud_height = getVariable(context, "stud_height");
-        extrude(context, id + "stud_extrude", {
+        extrude(context, id + "studExtrude", {
                         "entities" : qSketchRegion(id + "stud", true),
                         "endBound" : BoundingType.BLIND,
                         "operationType" : NewBodyOperationType.ADD,
-                        "depth" : stud_height * millimeter,
+                        "depth" : studHeight * millimeter,
                         "defaultScope" : false,
-                        "booleanScope": qUnion([qCreatedBy(id + "base_extrude", EntityType.BODY)])
+                        "booleanScope": qUnion([qCreatedBy(id + "baseExtrude", EntityType.BODY)])
                     });
     }
     /*
     ** function textSketch:
     ** Sketches the text on top of the studs
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Parameters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** [width] is width of a 1 by 1 lego
+    ** [col] is number of columns
+    ** [row] is number of rows
     ** Default unit: millimeter
     ** Functionality: Sketches the text using the two corners, offset from the center of the studs
-	** Return: NULL
+    ** Return: NULL
     */
-    function textSketch(context is Context, id is Id)
+    function textSketch(context is Context, id is Id, width is number, col is number, row is number)
     {
-        var col = getVariable(context, "col");
-        var row = getVariable(context, "row");
-        var width = getVariable(context, "width");
-        var text_id = 0;
-        var stud_center_x;
-        var stud_center_y;
-        var first_corner_x;
-        var first_corner_y;
-        var second_corner_x; 
-        var second_corner_y;
-        var stud_text is string = getVariable(context, "studtext");
-        var studText = newSketch(context, id + "stud_text", {
-                      "sketchPlane" : qNthElement(qCreatedBy(id + "stud_extrude", EntityType.FACE), 1)
+        var textID = 0;
+        var studCenterX;
+        var studCenterY;
+        var firstCornerX;
+        var firstCornerY;
+        var secondCornerX; 
+        var secondCornerY;
+        var stud_text is string = "LEGO";
+        var studText = newSketch(context, id + "studText", {
+                      "sketchPlane" : qNthElement(qCreatedBy(id + "studExtrude", EntityType.FACE), 1)
                       });
         var text_name = "text";
         for (var c = 0; c < col; c += 1)
         {
             for (var r = 0; r < row; r += 1)
             {
-                stud_center_x = (width/2 + width * r);
-                stud_center_y = (width/2 + width * c);
-                first_corner_x = (stud_center_x - 2);
-                first_corner_y = (stud_center_y - 0.703);
-                second_corner_x = (stud_center_x + 0.5);
-                second_corner_y = (stud_center_y + 0.703);
-                skText(studText, text_name ~ text_id, {
+                // Find the vector for the center of the stud
+                studCenterX = (width/2 + width * r);
+                studCenterY = (width/2 + width * c);
+                // Find the vectors to create a box to write text on using manual offset
+                firstCornerX = (studCenterX - 2);
+                firstCornerY = (studCenterY - 0.603);
+                secondCornerX = (studCenterX + 0.5);
+                secondCornerY = (studCenterY + 0.603);
+                skText(studText, text_name ~ textID, {
                         "fontName" : "OpenSans-Italic.ttf",
                         "text" : stud_text,
-                        "firstCorner" : vector(first_corner_x,first_corner_y) * millimeter,
-                        "secondCorner" : vector(second_corner_x, second_corner_y) * millimeter});
-                text_id += 1;
+                        "firstCorner" : vector(firstCornerX,firstCornerY) * millimeter,
+                        "secondCorner" : vector(secondCornerX, secondCornerY) * millimeter});
+                textID += 1;
             }
         }
         skSolve(studText);
@@ -226,149 +219,160 @@ export const Lego = defineFeature(function(context is Context, id is Id, definit
     /*
     ** function textExtrude:
     ** Extrude the text region from the previous sketch
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Parameters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
     ** Default unit: millimeter
     ** Functionality: Extrude the text on the studs
-	** Return: NULL
+    ** Returns: NULL
     */
     function textExtrude(context is Context, id is Id)
     {
+        var textHeight = 0.1;
         // Extrude just text region
         extrude(context, id + "textExtrude", {
-                            "entities" : qSketchRegion(id + "stud_text", true),
+                            "entities" : qSketchRegion(id + "studText", true),
                             "endBound" : BoundingType.BLIND,
                             "operationType" : NewBodyOperationType.ADD,
-                            "depth" : 0.1 * millimeter,
+                            "depth" : textHeight * millimeter,
                             "defaultScope" : false,
-                            "booleanScope": qUnion([qCreatedBy(id + "base_extrude", EntityType.BODY)])
+                            "booleanScope": qUnion([qCreatedBy(id + "baseExtrude", EntityType.BODY)])
         });
     }
     /*
     ** function shellBase:
     ** Shell the bricks
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Parameters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** [thic] is the thickness of the brick
     ** Default unit: millimeter
     ** Functionality: Creates a hollow block of brick
-	** Return: NULL
+    ** Return: NULL
     */
-    function shellBase(context is Context, id is Id)
+    function shellBase(context is Context, id is Id, thic is number)
     {
         // Shell inward with negative thickness.
-        var thic = getVariable(context, "thic");
-        opShell(context, id + "shell_base", {
+        opShell(context, id + "shellBase", {
                 "isHollow" : false,
-                "entities" : qNthElement(qCreatedBy(id + "base_extrude", EntityType.FACE), 1),
+                "entities" : qNthElement(qCreatedBy(id + "baseExtrude", EntityType.FACE), 1),
                 "thickness" : -thic * millimeter
         });
     }
     /*
     ** function solidInnerCol:
     ** Creates solid inner columns support
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Paramters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** [width] is base length of 1 by 1 brick
+    ** [studDia] is diameter of a stud
+    ** [solDia] is diamater of solid column
+    ** [col] is number of columns
+    ** [row] is number of rows
     ** Default unit: millimeter
     ** Functionality: For blocks consists of 1 by x or x by 1, create solid tubes
-	** Return: NULL
+    ** Return: NULL
     */
-    function solidInnerCol(context is Context, id is Id)
+    function solidInnerCol(context is Context, id is Id, width is number, studDia is number, solDia is number, col is number, row is number)
     {
-        var stud_dia = getVariable(context, "stud_dia");
-        var col_r = getVariable(context, "solid_inner_dia")/2;
-        var solid_inner = newSketch(context, id + "solid", {
-                "sketchPlane" : qNthElement(qCreatedBy(id + "base_extrude", EntityType.FACE), 5)
+        var colR = solDia/2;
+        var solidInner = newSketch(context, id + "solid", {
+                "sketchPlane" : qNthElement(qCreatedBy(id + "baseExtrude", EntityType.FACE), 5)
         });
-        var mid_pt_y = getVariable(context, "width")/2;
-        var mid_pt_x = getVariable(context, "stud_dia") + col_r * 2;
-        var col = getVariable(context, "col");
-        var row = getVariable(context, "row");
+        var midPtY = width/2;
+        var midPtX = studDia + colR * 2;
         var col_id = 0;
         var count = (row > col) ? row : col;
-        mid_pt_y = (row > col) ? -mid_pt_y : -mid_pt_x;
-        mid_pt_x = (row > col) ? mid_pt_x : getVariable(context, "width")/2;
+        midPtY = (row > col) ? -midPtY : -midPtX;
+        midPtX = (row > col) ? midPtX : width/2;
         for (var c = 0; c < count - 1; c += 1) {
-            skCircle(solid_inner, "solid" ~ col_id, {
-                    "center" : vector(mid_pt_x, mid_pt_y) * millimeter,
-                    "radius" : col_r * millimeter
+            skCircle(solidInner, "solid" ~ col_id, {
+                    "center" : vector(midPtX, midPtY) * millimeter,
+                    "radius" : colR * millimeter
             });
             
-            mid_pt_x += (row > col) ? stud_dia + col_r * 2 : 0;
-            mid_pt_y += (row > col) ? 0 : -(stud_dia + col_r * 2);
+            midPtX += (row > col) ? studDia + colR * 2 : 0;
+            midPtY += (row > col) ? 0 : -(studDia + colR * 2);
             col_id += 1;
         }
-        skSolve(solid_inner);
-        opExtrude(context, id + "inner_ex", {
+        skSolve(solidInner);
+        opExtrude(context, id + "innerEx", {
                 "entities" : qSketchRegion(id + "solid"),
                 "direction" : evOwnerSketchPlane(context, {"entity" : qSketchRegion(id + "solid")}).normal * -1,
                 "endBound" : BoundingType.BLIND,
                 "operationType" : NewBodyOperationType.ADD,
                 "endDepth" : 9.6 * millimeter,
                 "defaultScope" : false,
-                "booleanScope": qUnion([qCreatedBy(id + "base_extrude", EntityType.BODY)])
+                "booleanScope": qUnion([qCreatedBy(id + "baseExtrude", EntityType.BODY)])
         });
     }
     /*
     ** function innerHollow:
     ** Creates hollow columns support
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
+    ** Paramters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** [width] is base length of 1 by 1 brick
+    ** [holOutDia] is diamater of outer hollow column
+    ** [holInDia] is diamater of inner hollow column
+    ** [col] is number of columns
+    ** [row] is number of rows
     ** Default unit: millimeter
     ** Functionality: For blocks that have more than 2 for rows and columns, create hollow tubes
-	** Return: NULL
+    ** Return: NULL
     */
-    function innerHollow(context is Context, id is Id)
+    function innerHollow(context is Context, id is Id, width is number, holOutDia is number, holInDia is number, col is number, row is number)
     {
-        var hollow_inner = newSketch(context, id + "hollow_inner", {
-                "sketchPlane" : qNthElement(qCreatedBy(id + "base_extrude", EntityType.FACE), 5)
+        var hollowInner = newSketch(context, id + "hollowInner", {
+                "sketchPlane" : qNthElement(qCreatedBy(id + "baseExtrude", EntityType.FACE), 5)
         });
-        var hol_big_dia = getVariable(context, "hollow_outer_dia");
-        var hol_small_dia = getVariable(context, "hollow_inner_dia");
-        var hol_mid_x = getVariable(context, "width");
-        var hol_mid_y = -hol_mid_x;
-        var hol_id = 0;
-        var row = getVariable(context, "row");
-        var col = getVariable(context, "col");
+        var holBigDia = holOutDia;
+        var holSmallDia = holInDia;
+        var holMidX = width;
+        var holMidY = -holMidX;
+        var holId = 0;
         for (var c = 2; c <= col; c += 1)
         {
-            hol_mid_x = getVariable(context, "width");
+            holMidX = width;
             for (var r = 2; r <= row; r += 1)
             {
-                skCircle(hollow_inner, "hollow" ~ hol_id, {
-                    "center" : vector(hol_mid_x, hol_mid_y) * millimeter,
-                    "radius" : hol_big_dia/2 * millimeter
+                skCircle(hollowInner, "hollow" ~ holId, {
+                    "center" : vector(holMidX, holMidY) * millimeter,
+                    "radius" : holBigDia/2 * millimeter
                     });
-                skCircle(hollow_inner, "hollow_small" ~ hol_id, {
-                    "center" : vector(hol_mid_x, hol_mid_y) * millimeter,
-                    "radius" : hol_small_dia/2 * millimeter
+                skCircle(hollowInner, "hollowSmall" ~ holId, {
+                    "center" : vector(holMidX, holMidY) * millimeter,
+                    "radius" : holSmallDia/2 * millimeter
                     });
-                hol_mid_x += getVariable(context, "width");
-                hol_id += 1;
+                holMidX += width;
+                holId += 1;
             }
-            hol_mid_y -= getVariable(context, "width");
+            holMidY -= width;
         }
-        skSolve(hollow_inner);
-        opExtrude(context, id + "hollow_ex", {
-                "entities" : qSketchRegion(id + "hollow_inner", true),
-                "direction" : evOwnerSketchPlane(context, {"entity" : qSketchRegion(id + "hollow_inner")}).normal * -1,
+        skSolve(hollowInner);
+        opExtrude(context, id + "hollowEx", {
+                "entities" : qSketchRegion(id + "hollowInner", true),
+                "direction" : evOwnerSketchPlane(context, {"entity" : qSketchRegion(id + "hollowInner")}).normal * -1,
                 "endBound" : BoundingType.BLIND,
                 "operationType" : NewBodyOperationType.ADD,
                 "endDepth" : 9.6 * millimeter,
                 "defaultScope" : false,
-                "booleanScope": qUnion([qCreatedBy(id + "base_extrude", EntityType.BODY)])
+                "booleanScope": qUnion([qCreatedBy(id + "baseExtrude", EntityType.BODY)])
         });
         
     }
     /*
     ** function unifySolid:
-	** Parameter:
-	** 		context is Context, id is Id (passed in from main)
-    ** Unifies all extrude solids
-	** Return: NULL
+    ** Paramters:
+    ** [context] is Context (built in data struture)
+    ** [id] is Id (built in data structure)
+    ** Functionality: Unifies all extrude solids
+    ** Return: NULL
     */
     function unifySolid(context is Context, id is Id)
     {
-        opBoolean(context, id + "union_all", {
+        opBoolean(context, id + "unionAll", {
                 "tools" : qAllNonMeshSolidBodies(),
                 "operationType" : BooleanOperationType.UNION
         });
